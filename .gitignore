@@ -53,3 +53,17 @@ jspm_packages/
 
 # Aider AI Chat
 .aider*
+
+# --- Assessment Hub: never commit secrets, site data, logs or backups ---
+site_config.json
+common_site_config.json
+*.env
+.env*
+logs/
+*.log
+*.sql
+*.sql.gz
+*.tar
+*.tgz
+backups/
+/tmp/
