@@ -1,0 +1,21 @@
+{
+ "app": "assessment_hub",
+ "creation": "2026-09-17 09:00:00.000000",
+ "docstatus": 0,
+ "doctype": "Workspace Sidebar",
+ "header_icon": "file",
+ "idx": 0,
+ "items": [
+  {"child": 0, "collapsible": 1, "icon": "home", "indent": 0, "keep_closed": 0, "label": "Home", "link_to": "Assessment Hub", "link_type": "Workspace", "show_arrow": 0, "type": "Link"},
+  {"child": 0, "collapsible": 1, "icon": "file-text", "indent": 0, "keep_closed": 0, "label": "Assessments", "link_to": "Assessment", "link_type": "DocType", "show_arrow": 0, "type": "Link"},
+  {"child": 0, "collapsible": 1, "icon": "list", "indent": 0, "keep_closed": 0, "label": "Questions", "link_to": "Assessment Question", "link_type": "DocType", "show_arrow": 0, "type": "Link"},
+  {"child": 0, "collapsible": 1, "icon": "settings", "indent": 0, "keep_closed": 0, "label": "Settings", "link_to": "Assessment Hub Settings", "link_type": "DocType", "show_arrow": 0, "type": "Link"}
+ ],
+ "modified": "2026-09-17 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Assessment Hub",
+ "name": "Assessment Hub",
+ "owner": "Administrator",
+ "standard": 1,
+ "title": "Assessment Hub"
+}

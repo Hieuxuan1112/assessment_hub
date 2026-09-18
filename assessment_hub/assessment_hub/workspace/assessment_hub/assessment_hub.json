@@ -1,0 +1,48 @@
+{
+ "app": "assessment_hub",
+ "charts": [],
+ "content": "[{\"id\":\"ahHeadOver\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Overview</b></span>\",\"col\":12}},{\"id\":\"ahCardTotA\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Total Assessments\",\"col\":4}},{\"id\":\"ahCardPubA\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Published Assessments\",\"col\":4}},{\"id\":\"ahCardTotQ\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Total Questions\",\"col\":4}},{\"id\":\"ahSpacer01\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"ahHeadQuick\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Quick Access</b></span>\",\"col\":12}},{\"id\":\"ahShortAsm\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Assessments\",\"col\":3}},{\"id\":\"ahShortQst\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Questions\",\"col\":3}},{\"id\":\"ahShortNew\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"New Assessment\",\"col\":3}},{\"id\":\"ahShortSet\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Settings\",\"col\":3}},{\"id\":\"ahSpacer02\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"ahCardLink\",\"type\":\"card\",\"data\":{\"card_name\":\"Assessment Hub\",\"col\":4}}]",
+ "creation": "2026-09-17 09:00:00.000000",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "file",
+ "idx": 0,
+ "is_hidden": 0,
+ "label": "Assessment Hub",
+ "links": [
+  {"hidden": 0, "is_query_report": 0, "label": "Assessment Hub", "link_count": 3, "onboard": 0, "type": "Card Break"},
+  {"hidden": 0, "is_query_report": 0, "label": "Assessment", "link_count": 0, "link_to": "Assessment", "link_type": "DocType", "onboard": 0, "type": "Link"},
+  {"hidden": 0, "is_query_report": 0, "label": "Assessment Question", "link_count": 0, "link_to": "Assessment Question", "link_type": "DocType", "onboard": 0, "type": "Link"},
+  {"hidden": 0, "is_query_report": 0, "label": "Assessment Hub Settings", "link_count": 0, "link_to": "Assessment Hub Settings", "link_type": "DocType", "onboard": 0, "type": "Link"}
+ ],
+ "modified": "2026-09-17 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Assessment Hub",
+ "name": "Assessment Hub",
+ "number_cards": [
+  {"label": "Total Assessments", "number_card_name": "Total Assessments"},
+  {"label": "Published Assessments", "number_card_name": "Published Assessments"},
+  {"label": "Total Questions", "number_card_name": "Total Questions"}
+ ],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [
+  {"role": "System Manager"},
+  {"role": "Assessment Manager"},
+  {"role": "Assessment Viewer"}
+ ],
+ "sequence_id": 50.0,
+ "shortcuts": [
+  {"color": "Grey", "doc_view": "List", "label": "Assessments", "link_to": "Assessment", "type": "DocType"},
+  {"color": "Blue", "doc_view": "List", "label": "Questions", "link_to": "Assessment Question", "type": "DocType"},
+  {"color": "Green", "doc_view": "New", "label": "New Assessment", "link_to": "Assessment", "type": "DocType"},
+  {"color": "Grey", "doc_view": "", "label": "Settings", "link_to": "Assessment Hub Settings", "type": "DocType"}
+ ],
+ "title": "Assessment Hub",
+ "type": "Workspace"
+}

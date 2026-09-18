@@ -1,0 +1,47 @@
+{
+ "actions": [],
+ "autoname": "format:ASM-{#####}",
+ "creation": "2026-09-17 09:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "title",
+  "column_break_header",
+  "status",
+  "section_description",
+  "description",
+  "section_questions",
+  "questions_html"
+ ],
+ "fields": [
+  {"fieldname": "title", "fieldtype": "Data", "in_global_search": 1, "in_list_view": 1, "in_standard_filter": 1, "label": "Title", "length": 140, "reqd": 1},
+  {"fieldname": "column_break_header", "fieldtype": "Column Break"},
+  {"default": "Draft", "fieldname": "status", "fieldtype": "Select", "in_list_view": 1, "in_standard_filter": 1, "label": "Status", "no_copy": 1, "options": "Draft\nPublished\nArchived", "read_only": 1, "reqd": 1, "search_index": 1},
+  {"fieldname": "section_description", "fieldtype": "Section Break"},
+  {"fieldname": "description", "fieldtype": "Small Text", "label": "Description"},
+  {"depends_on": "eval:!doc.__islocal", "fieldname": "section_questions", "fieldtype": "Section Break", "label": "Questions"},
+  {"fieldname": "questions_html", "fieldtype": "HTML", "label": "Questions Preview"}
+ ],
+ "links": [
+  {"group": "Content", "link_doctype": "Assessment Question", "link_fieldname": "assessment"}
+ ],
+ "modified": "2026-09-17 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Assessment Hub",
+ "name": "Assessment",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {"create": 1, "delete": 1, "email": 1, "export": 1, "print": 1, "read": 1, "report": 1, "role": "System Manager", "share": 1, "write": 1},
+  {"create": 1, "delete": 1, "email": 1, "export": 1, "print": 1, "read": 1, "report": 1, "role": "Assessment Manager", "share": 1, "write": 1},
+  {"print": 1, "read": 1, "report": 1, "role": "Assessment Viewer"}
+ ],
+ "row_format": "Dynamic",
+ "search_fields": "title,status",
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "title",
+ "track_changes": 1
+}

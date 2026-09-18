@@ -1,0 +1,19 @@
+{
+ "app": "assessment_hub",
+ "creation": "2026-09-17 09:00:00.000000",
+ "docstatus": 0,
+ "doctype": "Desktop Icon",
+ "hidden": 0,
+ "icon_type": "Link",
+ "idx": 0,
+ "label": "Assessment Hub",
+ "link_to": "Assessment Hub",
+ "link_type": "Workspace Sidebar",
+ "logo_url": "/assets/assessment_hub/images/assessment_hub_logo.svg",
+ "modified": "2026-09-17 09:00:00.000000",
+ "modified_by": "Administrator",
+ "name": "Assessment Hub",
+ "owner": "Administrator",
+ "roles": [],
+ "standard": 1
+}
