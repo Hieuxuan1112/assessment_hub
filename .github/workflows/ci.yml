@@ -7,15 +7,14 @@ on:
   pull_request:
 
 concurrency:
-  group: main-assessment_hub-${{ github.event.number }}
+  group: main-assessment_hub-${{ github.event.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
   tests:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-    name: Server
+    timeout-minutes: 60
+    name: Server tests, API smoke, uninstall
 
     services:
       redis-cache:
@@ -38,11 +37,6 @@ jobs:
       - name: Clone
         uses: actions/checkout@v6
 
-      - name: Find tests
-        run: |
-          echo "Finding tests"
-          grep -rn "def test" > /dev/null
-
       - name: Setup Python
         uses: actions/setup-python@v6
         with:
@@ -58,48 +52,63 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/*requirements.txt', '**/pyproject.toml', '**/setup.py', '**/setup.cfg') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
           restore-keys: |
             ${{ runner.os }}-pip-
-            ${{ runner.os }}-
 
-      - name: Get yarn cache directory path
-        id: yarn-cache-dir-path
-        run: 'echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT'
-
-      - uses: actions/cache@v4
-        id: yarn-cache
-        with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
-
-      - name: Install MariaDB Client
+      - name: Install MariaDB client and jq
         run: |
-          sudo apt update
-          sudo apt-get install mariadb-client
+          sudo apt-get update
+          sudo apt-get install -y mariadb-client jq
 
-      - name: Setup
+      - name: Setup bench (Frappe version-16)
         run: |
           pip install frappe-bench
-          bench init --skip-redis-config-generation --skip-assets --python "$(which python)" ~/frappe-bench
+          bench init --frappe-branch version-16 --skip-redis-config-generation --skip-assets --python "$(which python)" ~/frappe-bench
 
-      - name: Install
+      - name: Install app on a fresh site
         working-directory: /home/runner/frappe-bench
         run: |
           bench get-app assessment_hub $GITHUB_WORKSPACE
           bench setup requirements --dev
           bench new-site --db-root-password root --admin-password admin test_site
+          bench --site test_site set-config allow_tests true
           bench --site test_site install-app assessment_hub
-          bench build
+          bench build --app assessment_hub
         env:
           CI: 'Yes'
 
-      - name: Run Tests
+      - name: Migrate twice (sync + patches must be idempotent)
         working-directory: /home/runner/frappe-bench
         run: |
-          bench --site test_site set-config allow_tests true
-          bench --site test_site run-tests --app assessment_hub
+          bench --site test_site migrate
+          bench --site test_site migrate
+
+      - name: Run tests
+        working-directory: /home/runner/frappe-bench
+        run: bench --site test_site run-tests --app assessment_hub
         env:
           TYPE: server
+
+      - name: API smoke test over real HTTP
+        working-directory: /home/runner/frappe-bench
+        run: |
+          bench use test_site
+          bench --site test_site execute assessment_hub.utils.dev_seed.create_sample_content
+          bench --site test_site execute assessment_hub.utils.dev_seed.create_api_users --kwargs "{'output_path': '/tmp/ah_tokens.env'}"
+          nohup bench serve --port 8000 > /tmp/bench_serve.log 2>&1 &
+          for i in $(seq 1 60); do
+            if curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8000/api/method/ping | grep -q 200; then break; fi
+            sleep 2
+          done
+          bash apps/assessment_hub/scripts/smoke_api.sh http://127.0.0.1:8000 /tmp/ah_tokens.env
+
+      - name: Show server log on failure
+        if: failure()
+        run: tail -n 200 /tmp/bench_serve.log || true
+
+      - name: Uninstall and reinstall cleanly
+        working-directory: /home/runner/frappe-bench
+        run: |
+          pkill -f "bench serve" || true
+          bash apps/assessment_hub/scripts/verify_uninstall.sh test_site

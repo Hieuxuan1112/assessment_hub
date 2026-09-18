@@ -86,12 +86,12 @@ app_license = "mit"
 # ------------
 
 # before_install = "assessment_hub.install.before_install"
-# after_install = "assessment_hub.install.after_install"
+after_install = "assessment_hub.install.after_install"
 
 # Uninstallation
 # ------------
 
-# before_uninstall = "assessment_hub.uninstall.before_uninstall"
+before_uninstall = "assessment_hub.install.before_uninstall"
 # after_uninstall = "assessment_hub.uninstall.after_uninstall"
 
 # Integration Setup
@@ -261,4 +261,3 @@ app_license = "mit"
 # ------------
 # List of apps whose translatable strings should be excluded from this app's translations.
 # ignore_translatable_strings_from = []
-

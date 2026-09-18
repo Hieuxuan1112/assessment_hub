@@ -1,0 +1,25 @@
+{
+ "actions": [],
+ "creation": "2026-09-17 09:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": ["content", "score", "sort_order"],
+ "fields": [
+  {"columns": 6, "fieldname": "content", "fieldtype": "Small Text", "in_list_view": 1, "label": "Content", "reqd": 1},
+  {"columns": 2, "default": "0", "fieldname": "score", "fieldtype": "Float", "in_list_view": 1, "label": "Score", "non_negative": 1},
+  {"columns": 2, "fieldname": "sort_order", "fieldtype": "Int", "in_list_view": 1, "label": "Sort Order", "non_negative": 1}
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2026-09-17 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Assessment Hub",
+ "name": "Assessment Answer",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
