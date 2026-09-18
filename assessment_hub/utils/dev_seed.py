@@ -108,3 +108,28 @@ def create_api_users(output_path: str = "/tmp/assessment_hub_tokens.env") -> str
 	with open(output_path, "w", encoding="utf-8") as handle:
 		handle.write("\n".join(lines) + "\n")
 	return output_path
+
+
+def explain_api_queries() -> dict:
+	"""Print MariaDB EXPLAIN plans for the two hottest API queries (dev only)."""
+	ensure_dev_site()
+	assessment_id = frappe.db.get_value("Assessment", {}, "name") or "ASM-00001"
+	plans = {
+		"list_questions": frappe.db.sql(
+			"""EXPLAIN SELECT `name`, `sort_order` FROM `tabAssessment Question`
+			WHERE `assessment` = %s ORDER BY `sort_order` ASC""",
+			(assessment_id,),
+			as_dict=True,
+		),
+		"list_assessments_updated_since": frappe.db.sql(
+			"""EXPLAIN SELECT `name` FROM `tabAssessment`
+			WHERE `modified` >= %s ORDER BY `modified` ASC, `name` ASC""",
+			("2026-01-01 00:00:00",),
+			as_dict=True,
+		),
+	}
+	for label, rows in plans.items():
+		print(f"--- {label}")
+		for row in rows:
+			print({key: row.get(key) for key in ("table", "type", "key", "rows", "Extra")})
+	return plans

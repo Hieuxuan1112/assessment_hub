@@ -1,0 +1,138 @@
+{
+  "info": {
+    "name": "Assessment Hub Partner API v1",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Set collection variables base_url, manager_token and viewer_token (format api_key:api_secret). Requests are ordered: list -> get -> create -> list questions -> error examples."
+  },
+  "variable": [
+    {"key": "base_url", "value": "http://assessment.localhost:8010"},
+    {"key": "manager_token", "value": "api_key:api_secret"},
+    {"key": "viewer_token", "value": "api_key:api_secret"},
+    {"key": "assessment_id", "value": "ASM-00001"}
+  ],
+  "item": [
+    {
+      "name": "List assessments (viewer)",
+      "request": {
+        "method": "GET",
+        "header": [{"key": "Authorization", "value": "token {{viewer_token}}"}],
+        "url": {
+          "raw": "{{base_url}}/api/v2/method/assessment_hub.api.v1.assessments.list_assessments?status=Draft&search=Frappe&page_length=20&page=1",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v2", "method", "assessment_hub.api.v1.assessments.list_assessments"],
+          "query": [
+            {"key": "status", "value": "Draft"},
+            {"key": "search", "value": "Frappe"},
+            {"key": "page_length", "value": "20"},
+            {"key": "page", "value": "1"}
+          ]
+        }
+      }
+    },
+    {
+      "name": "Incremental sync (updated_since)",
+      "request": {
+        "method": "GET",
+        "header": [{"key": "Authorization", "value": "token {{viewer_token}}"}],
+        "url": {
+          "raw": "{{base_url}}/api/v2/method/assessment_hub.api.v1.assessments.list_assessments?updated_since=2026-01-01 00:00:00&start=0",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v2", "method", "assessment_hub.api.v1.assessments.list_assessments"],
+          "query": [
+            {"key": "updated_since", "value": "2026-01-01 00:00:00"},
+            {"key": "start", "value": "0"}
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get assessment with questions",
+      "request": {
+        "method": "GET",
+        "header": [{"key": "Authorization", "value": "token {{viewer_token}}"}],
+        "url": {
+          "raw": "{{base_url}}/api/v2/method/assessment_hub.api.v1.assessments.get_assessment?id={{assessment_id}}&include_questions=1",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v2", "method", "assessment_hub.api.v1.assessments.get_assessment"],
+          "query": [
+            {"key": "id", "value": "{{assessment_id}}"},
+            {"key": "include_questions", "value": "1"}
+          ]
+        }
+      }
+    },
+    {
+      "name": "Create question with answers (manager)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Authorization", "value": "token {{manager_token}}"},
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"assessment_id\": \"{{assessment_id}}\",\n  \"content\": \"<p>Which file registers doc_events?</p>\",\n  \"answers\": [\n    {\"content\": \"hooks.py\", \"score\": 1},\n    {\"content\": \"setup.py\", \"score\": 0}\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v2/method/assessment_hub.api.v1.questions.create_question",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v2", "method", "assessment_hub.api.v1.questions.create_question"]
+        }
+      }
+    },
+    {
+      "name": "List questions of an assessment",
+      "request": {
+        "method": "GET",
+        "header": [{"key": "Authorization", "value": "token {{viewer_token}}"}],
+        "url": {
+          "raw": "{{base_url}}/api/v2/method/assessment_hub.api.v1.questions.list_questions?assessment_id={{assessment_id}}&include_answers=1",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v2", "method", "assessment_hub.api.v1.questions.list_questions"],
+          "query": [
+            {"key": "assessment_id", "value": "{{assessment_id}}"},
+            {"key": "include_answers", "value": "1"}
+          ]
+        }
+      }
+    },
+    {
+      "name": "Error: viewer cannot create (403)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Authorization", "value": "token {{viewer_token}}"},
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"assessment_id\": \"{{assessment_id}}\",\n  \"content\": \"<p>Not allowed</p>\",\n  \"answers\": [{\"content\": \"A\", \"score\": 1}]\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v2/method/assessment_hub.api.v1.questions.create_question",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v2", "method", "assessment_hub.api.v1.questions.create_question"]
+        }
+      }
+    },
+    {
+      "name": "Error: invalid answer rolls back (422)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Authorization", "value": "token {{manager_token}}"},
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"assessment_id\": \"{{assessment_id}}\",\n  \"content\": \"<p>Rollback demo</p>\",\n  \"answers\": [\n    {\"content\": \"A\", \"score\": 1},\n    {\"content\": \"B\", \"score\": -1}\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v2/method/assessment_hub.api.v1.questions.create_question",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v2", "method", "assessment_hub.api.v1.questions.create_question"]
+        }
+      }
+    }
+  ]
+}
