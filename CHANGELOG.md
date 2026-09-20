@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented here. The format follows Keep a Changelog and the project uses Semantic Versioning.
 
-## [1.1.0] - YYYY-MM-DD
+## [1.1.0] - 2026-09-20
 
 ### Added
 - Per-user API rate limiting (`API Rate Limit (requests / minute)` setting, default 120, 0 = off); HTTP 429 `RATE_LIMITED`.
