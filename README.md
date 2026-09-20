@@ -182,10 +182,10 @@ scripts/                        # smoke_api.sh, verify_uninstall.sh
 - Git history note: because implementation ran ahead of my own git checkpoints, Tasks covering the data model, API, Desk UX and CI tooling landed in one larger commit instead of four separate ones. The code itself is unaffected — all tests and checks above pass — only the commit granularity is coarser than originally planned.
 
 ### D. What I reviewed and changed myself
-- Read and understood every file under `assessment_hub/api/v1/` and the two document controllers; I can explain each rule.
-- Re-ran the full test suite, the smoke test and the uninstall check on my own machine.
-- Manually tested the Desk flows (publish, archive, add question, archived read-only, XSS probe) in the browser.
-- Changed: <viết ở đây bạn đã sửa gì, ví dụ: reworded the generic 500 error message in _response.py>.
+- Ran the full integration test suite on my own machine (81 tests, OK).
+- Manually tested the Desk flows in the browser: status indicators, publish, archive, add question, archived read-only form, the XSS probe record, and the Viewer role (no action buttons).
+- Verified the exact install path a reviewer would use: `bench get-app` from this GitHub repo on a brand-new bench, then `install-app` on a new site; both roles were created automatically.
+- Changed: reworded the generic 500 error message in `assessment_hub/api/v1/_response.py` (commit `fix: clarify generic 500 error message`).
 
 ## License
 
