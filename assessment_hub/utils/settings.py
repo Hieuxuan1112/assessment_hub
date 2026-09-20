@@ -5,6 +5,7 @@ SETTINGS_DOCTYPE = "Assessment Hub Settings"
 DEFAULT_SETTINGS = {
 	"default_page_length": 20,
 	"max_page_length": 100,
+	"api_rate_limit_per_minute": 120,
 	"min_answers_per_question": 1,
 	"allow_publish_without_questions": 0,
 }

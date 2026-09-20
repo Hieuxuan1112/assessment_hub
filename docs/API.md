@@ -37,6 +37,8 @@ To generate keys for a partner account: open the **User** form for that account 
 | `PERMISSION_DENIED` | 403 | the account's role does not allow the action |
 | `NOT_FOUND` | 404 | the referenced Assessment does not exist |
 | `INVALID_STATE` | 409 | the Assessment is Archived and cannot accept new/changed Questions |
+| `IDEMPOTENCY_KEY_REUSED` | 409 | `create_question` got an `idempotency_key` already used with a different request body |
+| `RATE_LIMITED` | 429 | the account exceeded `API Rate Limit (requests / minute)` in Assessment Hub Settings |
 | `VALIDATION_ERROR` | 422 | any other business-rule failure (e.g. duplicate/negative answer, too few answers) |
 | `INTERNAL_ERROR` | 500 | an unexpected server error; logged to Error Log, response includes a reference id |
 
@@ -46,6 +48,17 @@ To generate keys for a partner account: open the **User** form for that account 
 - Wrong HTTP method (e.g. `GET` on a `POST`-only endpoint) — `{"errors":[{"type":"PermissionError","message":"Not permitted", ...}]}`
 
 On a site with `developer_mode` enabled (the dev site used to capture these examples), Frappe's own error body also includes a full `exception` traceback string; on a production site (`developer_mode` off) that field is omitted.
+
+## 2a. Rate limiting
+
+Every request is counted per account (the user behind the API key) in fixed one-minute windows. The limit is `API Rate Limit (requests / minute)` in Assessment Hub Settings (default 120, `0` disables it). Over the limit the API answers **HTTP 429** with `{"errors": [{"code": "RATE_LIMITED", ...}]}`; wait for the next minute and retry. Captured against this app with the limit set to 3:
+
+```text
+request 1 -> 200
+request 2 -> 200
+request 3 -> 200
+request 4 -> 429   {"errors":[{"message":"Rate limit exceeded: at most 3 requests per minute. Please retry shortly.","code":"RATE_LIMITED"}]}
+```
 
 ## 3. Pagination
 
@@ -237,6 +250,9 @@ Requires the **Assessment Manager** role. Creates the Question and all its Answe
 | `sort_order` | no | ≥ 1; auto-assigned (last + 1) if omitted |
 | `status` | no | `Active` (default) \| `Inactive` |
 | `answers` | yes | JSON array (or a JSON-encoded string), 1–50 items, each `{"content": str, "score": number, "sort_order"?: int}` |
+| `idempotency_key` | no | string, max 64 chars. Makes retries safe, see below |
+
+**Idempotency.** Send an `idempotency_key` (any unique string per logical operation, e.g. a UUID) and retry with the *same key and same body* after a timeout: you get the original question back (same `id`) instead of a duplicate. The same key with a *different* body returns `409 IDEMPOTENCY_KEY_REUSED`. Keys are scoped per account, and the replay still works after the assessment has since been archived. Two identical requests racing each other are resolved by a unique database index, so only one question is ever created.
 
 ```bash
 curl -s -X POST "http://assessment.localhost:8010/api/v2/method/assessment_hub.api.v1.questions.create_question" \

@@ -70,6 +70,16 @@ echo "== Questions"
 code=$(request POST "$MANAGER_TOKEN" "questions.create_question" "{\"assessment_id\":\"$DRAFT_ID\",\"content\":\"<p>Smoke question</p>\",\"answers\":$answers_ok}")
 check "manager creates question + answers" 200 "$code" '.data.id != null and (.data.answers | length) == 2'
 
+IDEM_KEY="smoke-$(date +%s%N)"
+idem_body="{\"assessment_id\":\"$DRAFT_ID\",\"content\":\"<p>Idempotent smoke</p>\",\"idempotency_key\":\"$IDEM_KEY\",\"answers\":$answers_ok}"
+code=$(request POST "$MANAGER_TOKEN" "questions.create_question" "$idem_body")
+check "idempotent create (first call)" 200 "$code" '.data.id != null'
+FIRST_ID=$(jq -r '.data.id' "$BODY")
+code=$(request POST "$MANAGER_TOKEN" "questions.create_question" "$idem_body")
+check "idempotent replay returns the same question" 200 "$code" ".data.id == \"$FIRST_ID\""
+code=$(request POST "$MANAGER_TOKEN" "questions.create_question" "${idem_body/Idempotent smoke/Changed body}")
+check "same key, different body -> 409 IDEMPOTENCY_KEY_REUSED" 409 "$code" '.errors[0].code == "IDEMPOTENCY_KEY_REUSED"'
+
 code=$(request POST "$VIEWER_TOKEN" "questions.create_question" "{\"assessment_id\":\"$DRAFT_ID\",\"content\":\"<p>Nope</p>\",\"answers\":$answers_ok}")
 check "viewer create -> 403 PERMISSION_DENIED" 403 "$code" '.errors[0].code == "PERMISSION_DENIED"'
 

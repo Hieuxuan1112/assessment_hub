@@ -6,6 +6,7 @@
  "field_order": [
   "section_api",
   "default_page_length",
+  "api_rate_limit_per_minute",
   "column_break_api",
   "max_page_length",
   "section_rules",
@@ -16,6 +17,7 @@
  "fields": [
   {"fieldname": "section_api", "fieldtype": "Section Break", "label": "Partner API"},
   {"default": "20", "description": "Used when a partner request does not send page_length.", "fieldname": "default_page_length", "fieldtype": "Int", "label": "Default Page Length", "non_negative": 1},
+  {"default": "120", "description": "Maximum Partner API requests per user per minute. 0 disables the limit.", "fieldname": "api_rate_limit_per_minute", "fieldtype": "Int", "label": "API Rate Limit (requests / minute)", "non_negative": 1},
   {"fieldname": "column_break_api", "fieldtype": "Column Break"},
   {"default": "100", "description": "Requests with a larger page_length are rejected with INVALID_PARAMETER.", "fieldname": "max_page_length", "fieldtype": "Int", "label": "Max Page Length", "non_negative": 1},
   {"fieldname": "section_rules", "fieldtype": "Section Break", "label": "Content Rules"},
@@ -25,7 +27,7 @@
  ],
  "issingle": 1,
  "links": [],
- "modified": "2026-09-17 09:00:00.000000",
+ "modified": "2026-09-20 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Assessment Hub",
  "name": "Assessment Hub Settings",

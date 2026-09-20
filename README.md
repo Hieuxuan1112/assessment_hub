@@ -13,6 +13,8 @@ A Frappe v16 custom app that manages Assessment → Question → Answer content 
 - Partner REST API (`/api/v2/method/assessment_hub.api.v1.*`) with a uniform `{"data"}` / `{"errors"}` envelope and no `ignore_permissions` anywhere — [`api/v1/`](assessment_hub/api/v1/), [`test_api_security.py`](assessment_hub/tests/test_api_security.py)
 - Atomic question+answers creation with savepoint rollback on any failure — [`questions.py`](assessment_hub/api/v1/questions.py), [`test_api_questions.py`](assessment_hub/tests/test_api_questions.py)
 - Constant-query-count nested question/answer loading (no N+1) — [`_queries.py`](assessment_hub/api/v1/_queries.py), `test_include_questions_query_count_does_not_grow_with_questions`
+- Per-user API rate limiting (HTTP 429) and `idempotency_key` for safe `create_question` retries — [`_ratelimit.py`](assessment_hub/api/v1/_ratelimit.py), [`_idempotency.py`](assessment_hub/api/v1/_idempotency.py), `test_api_ratelimit.py`, `test_api_idempotency.py`
+- Frappe User Permissions respected by every endpoint — [`test_api_user_permissions.py`](assessment_hub/tests/test_api_user_permissions.py)
 - Configuration via a Settings DocType instead of hard-coded values — [`assessment_hub_settings.py`](assessment_hub/assessment_hub/doctype/assessment_hub_settings/assessment_hub_settings.py)
 
 ## Requirements
@@ -56,6 +58,7 @@ This removes the app's DocTypes, Workspace, Number Cards, Workspace Sidebar, Des
 |---|---|---|
 | `default_page_length` | 20 | used by the Partner API when a request omits `page_length` |
 | `max_page_length` | 100 | requests with a larger `page_length` are rejected (`INVALID_PARAMETER`) |
+| `api_rate_limit_per_minute` | 120 | max Partner API requests per user per minute; 0 turns the limit off |
 | `min_answers_per_question` | 1 | a Question needs at least this many Answers to save |
 | `allow_publish_without_questions` | off | when off, publishing needs ≥ 1 Active Question |
 
@@ -128,9 +131,12 @@ pre-commit run --all-files
 | `tests/test_api_assessments.py` | `list_assessments` / `get_assessment`, no-N+1 | 19 |
 | `tests/test_api_questions.py` | `list_questions` / `create_question`, atomic rollback | 14 |
 | `tests/test_api_security.py` | no `ignore_permissions`/raw SQL, correct whitelisting | 2 |
-| **Total** | | **81** |
+| `tests/test_api_user_permissions.py` | User Permission narrows list/get and blocks writes | 7 |
+| `tests/test_api_ratelimit.py` | per-user limit, 429, disable, per-window reset | 5 |
+| `tests/test_api_idempotency.py` | replay, conflict, per-user keys, race via unique index | 7 |
+| **Total** | | **100** |
 
-`scripts/smoke_api.sh` runs 15 real-HTTP checks against the running app; `scripts/verify_uninstall.sh` runs 9 leftover checks plus a reinstall check.
+`scripts/smoke_api.sh` runs 18 real-HTTP checks against the running app; `scripts/verify_uninstall.sh` runs 9 leftover checks plus a reinstall check.
 
 ## CI
 
@@ -147,12 +153,12 @@ pre-commit run --all-files
 
 ```
 assessment_hub/
-├── api/v1/                    # Partner REST API (_response, _params, _serializers, _queries, assessments, questions)
+├── api/v1/                    # Partner REST API (_response, _params, _serializers, _queries, _ratelimit, _idempotency, assessments, questions)
 ├── assessment_hub/
 │   ├── doctype/                # Assessment, Assessment Question, Assessment Answer, Assessment Hub Settings
 │   ├── number_card/, workspace/
 ├── desktop_icon/, workspace_sidebar/   # app-level Desk v16 records
-├── patches/v1_0/
+├── patches/v1_0/, v1_1/
 ├── tests/                      # cross-cutting tests (install, API); doctype tests live beside their doctype
 ├── utils/                      # settings accessor, dev_seed helpers
 ├── install.py                  # after_install / before_uninstall hooks
@@ -178,11 +184,11 @@ scripts/                        # smoke_api.sh, verify_uninstall.sh
 - Design decisions were made in a written spec before any code, and approved by me.
 - Every task followed test-first development: failing test → implementation → passing test → commit.
 - Framework behaviour was checked against the Frappe `version-16` source rather than assumed; every place reality differed from the plan (a bug found in a verification script, a real uninstall leftover, environment quirks) is logged with what was found and how it was fixed.
-- Automated gates: 81 integration tests, a security test that forbids `ignore_permissions`/raw SQL in the API package, a 15-check real-HTTP smoke test, a 9-check uninstall/reinstall verification, and CI running all of it on a fresh site.
+- Automated gates: 100 integration tests, a security test that forbids `ignore_permissions`/raw SQL in the API package, an 18-check real-HTTP smoke test, a 9-check uninstall/reinstall verification, and CI running all of it on a fresh site.
 - Git history note: because implementation ran ahead of my own git checkpoints, Tasks covering the data model, API, Desk UX and CI tooling landed in one larger commit instead of four separate ones. The code itself is unaffected — all tests and checks above pass — only the commit granularity is coarser than originally planned.
 
 ### D. What I reviewed and changed myself
-- Ran the full integration test suite on my own machine (81 tests, OK).
+- Ran the full integration test suite on my own machine (all passing).
 - Manually tested the Desk flows in the browser: status indicators, publish, archive, add question, archived read-only form, the XSS probe record, and the Viewer role (no action buttons).
 - Verified the exact install path a reviewer would use: `bench get-app` from this GitHub repo on a brand-new bench, then `install-app` on a new site; both roles were created automatically.
 - Changed: reworded the generic 500 error message in `assessment_hub/api/v1/_response.py` (commit `fix: clarify generic 500 error message`).

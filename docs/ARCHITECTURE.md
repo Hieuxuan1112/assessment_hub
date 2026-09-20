@@ -120,6 +120,9 @@ Both queries use `type: ref`/`range` (index lookups, not full table scans) and `
 | Partial writes | Savepoint per API call, rollback on any error | `test_failure_after_rows_are_written_rolls_back_question_and_answers` |
 | Error detail leakage | 500s return a generic message + Error Log reference; `_server_messages` cleared | `test_unexpected_error_is_logged_and_details_hidden` |
 | Secrets in git | `.gitignore` covers site config, env files, logs, backups | repository |
+| Data outside a user's scope | Frappe **User Permission** on Assessment narrows `get_list`, and `has_permission(doc=...)` / `check_permission` reject other records (403) | `test_api_user_permissions.py` (7 tests: list, get, list questions, create) |
+| Request floods | Per-user fixed-window limiter in Redis, limit from Settings, HTTP 429 `RATE_LIMITED`; only real HTTP requests are counted | `test_api_ratelimit.py` (5 tests), real-HTTP run 200/200/200/429 |
+| Duplicate creates on retry | `idempotency_key` stored as a per-user hash on a unique-indexed column + request fingerprint; replay returns the original, a different body is 409 | `test_api_idempotency.py` (7 tests incl. a simulated race), `smoke_api.sh` |
 
 ## 8. Fixtures and patches notes
 
