@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented here. The format follows Keep a Changelog and the project uses Semantic Versioning.
 
-## [1.0.0] - YYYY-MM-DD
+## [1.0.0] - 2026-09-20
 
 ### Added
 - DocTypes: Assessment, Assessment Question, Assessment Answer (child table), Assessment Hub Settings (single).
