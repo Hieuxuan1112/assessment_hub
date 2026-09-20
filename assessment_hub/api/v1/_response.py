@@ -67,7 +67,7 @@ def api_endpoint(fn):
 				error_log = frappe.log_error(title=f"Assessment Hub API error in {fn.__name__}")
 				frappe.local.flags.commit = True  # keep the Error Log row even for GET requests
 				reference = getattr(error_log, "name", None)
-				message = _("Unexpected server error.")
+				message = _("Unexpected server error. Please try again.")
 				if reference:
 					message = _("Unexpected server error. Reference: {0}").format(reference)
 				_set_error(500, "INTERNAL_ERROR", message)
