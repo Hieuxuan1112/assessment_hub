@@ -7,6 +7,12 @@ class InvalidStateError(frappe.ValidationError):
 	http_status_code = 409
 
 
+class IdempotencyConflictError(frappe.ValidationError):
+	"""An idempotency_key was reused with a different request body."""
+
+	http_status_code = 409
+
+
 class ApiParameterError(frappe.ValidationError):
 	"""A Partner API request parameter is missing or invalid."""
 

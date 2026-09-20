@@ -13,9 +13,12 @@ import frappe
 from frappe import _
 from frappe.utils import strip_html_tags
 
-from assessment_hub.exceptions import ApiParameterError, InvalidStateError
+from assessment_hub.api.v1._ratelimit import check_rate_limit
+from assessment_hub.exceptions import ApiParameterError, IdempotencyConflictError, InvalidStateError
 
 DEFAULT_MESSAGES = {
+	"RATE_LIMITED": "Too many requests. Please retry shortly.",
+	"IDEMPOTENCY_KEY_REUSED": "This idempotency_key was already used with a different request body.",
 	"PERMISSION_DENIED": "You do not have permission to perform this action.",
 	"NOT_FOUND": "The requested resource was not found.",
 	"INVALID_STATE": "The resource is not in a state that allows this action.",
@@ -39,6 +42,10 @@ def _classify(exc: BaseException) -> tuple[int, str] | None:
 		return 404, "NOT_FOUND"
 	if isinstance(exc, InvalidStateError):
 		return 409, "INVALID_STATE"
+	if isinstance(exc, IdempotencyConflictError):
+		return 409, "IDEMPOTENCY_KEY_REUSED"
+	if isinstance(exc, frappe.RateLimitExceededError):
+		return 429, "RATE_LIMITED"
 	if isinstance(exc, frappe.ValidationError):
 		return 422, "VALIDATION_ERROR"
 	return None
@@ -57,6 +64,7 @@ def api_endpoint(fn):
 		savepoint = f"ah_api_{frappe.generate_hash(length=10)}"
 		frappe.db.savepoint(savepoint)
 		try:
+			check_rate_limit()
 			result = fn(*args, **kwargs)
 		except Exception as exc:
 			frappe.db.rollback(save_point=savepoint)

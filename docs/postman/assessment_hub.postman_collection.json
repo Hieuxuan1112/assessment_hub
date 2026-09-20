@@ -71,7 +71,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"assessment_id\": \"{{assessment_id}}\",\n  \"content\": \"<p>Which file registers doc_events?</p>\",\n  \"answers\": [\n    {\"content\": \"hooks.py\", \"score\": 1},\n    {\"content\": \"setup.py\", \"score\": 0}\n  ]\n}"
+          "raw": "{\n  \"assessment_id\": \"{{assessment_id}}\",\n  \"content\": \"<p>Which file registers doc_events?</p>\",\n  \"idempotency_key\": \"partner-retry-001\",\n  \"answers\": [\n    {\"content\": \"hooks.py\", \"score\": 1},\n    {\"content\": \"setup.py\", \"score\": 0}\n  ]\n}"
         },
         "url": {
           "raw": "{{base_url}}/api/v2/method/assessment_hub.api.v1.questions.create_question",

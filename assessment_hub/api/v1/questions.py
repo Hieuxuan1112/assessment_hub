@@ -9,7 +9,14 @@ from typing import Any
 import frappe
 from frappe import _
 
+from assessment_hub.api.v1._idempotency import (
+	ensure_same_request,
+	find_existing,
+	fingerprint,
+	key_hash,
+)
 from assessment_hub.api.v1._params import (
+	optional_str,
 	parse_answers,
 	parse_bool,
 	parse_choice,
@@ -66,12 +73,16 @@ def create_question(
 	sort_order: Any = None,
 	status: Any = None,
 	answers: Any = None,
+	idempotency_key: Any = None,
 ) -> dict:
 	"""Create a question with all its answers atomically.
 
 	Parent and child rows are written by a single doc.insert(). The api_endpoint decorator
 	wraps the call in a savepoint, so any failure (validation, permission, or a crash after
 	the rows were written) rolls back the question and every answer together.
+
+	With an `idempotency_key`, retrying the same request returns the original question
+	instead of creating a duplicate (see _idempotency.py).
 	"""
 	frappe.has_permission(QUESTION_DOCTYPE, "create", throw=True)
 	assessment = require_str(assessment_id, "assessment_id")
@@ -79,6 +90,23 @@ def create_question(
 	order = parse_int(sort_order, "sort_order", minimum=1)
 	status_value = parse_choice(status, "status", QUESTION_STATUSES) or "Active"
 	answer_rows = parse_answers(answers)
+	key = optional_str(idempotency_key, "idempotency_key", max_length=64)
+
+	hashed_key = request_fingerprint = None
+	if key:
+		hashed_key = key_hash(frappe.session.user, key)
+		request_fingerprint = fingerprint(
+			{
+				"assessment_id": assessment,
+				"content": question_content,
+				"sort_order": order,
+				"status": status_value,
+				"answers": answer_rows,
+			}
+		)
+		if existing := find_existing(hashed_key):
+			return _replay(existing, request_fingerprint)
+
 	_get_readable_assessment(assessment)
 
 	question = frappe.get_doc(
@@ -89,9 +117,26 @@ def create_question(
 			"sort_order": order,
 			"status": status_value,
 			"answers": answer_rows,
+			"idempotency_key": hashed_key,
+			"request_fingerprint": request_fingerprint,
 		}
 	)
-	question.insert()
+	try:
+		question.insert()
+	except frappe.UniqueValidationError:
+		# Two identical requests raced: the unique index on idempotency_key let only one through.
+		if hashed_key and (existing := find_existing(hashed_key)):
+			return _replay(existing, request_fingerprint)
+		raise
 
+	return _created_payload(question)
+
+
+def _replay(existing, request_fingerprint: str) -> dict:
+	ensure_same_request(existing, request_fingerprint)
+	return _created_payload(frappe.get_doc(QUESTION_DOCTYPE, existing.name))
+
+
+def _created_payload(question) -> dict:
 	ordered_answers = sorted(question.answers, key=lambda row: (row.sort_order, row.idx))
 	return serialize_question(question, [serialize_answer(row) for row in ordered_answers])
